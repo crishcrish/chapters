@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario Especial</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Incluye Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+</head>
+<body>
+    <div id="calendar-container">
+        <h1>Calendario de Capitulos</h1>
+        <button id="add-chapter-button">Agregar capítulo</button>
+        <div id="calendar"></div>
+    </div>
+
+
+    <!-- Cuestionario Modal -->
+    <div id="questionnaire-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Agregar Capítulo</h2>
+            <form id="questionnaire-form">
+                <label for="chapter-name">Nombre del capítulo:</label>
+                <input type="text" id="chapter-name" name="chapter-name" required>
+
+                <label for="time-unit">Unidad de tiempo:</label>
+                <select id="time-unit" name="time-unit" required>
+                    <option value="week">Semana</option>
+                    <option value="day">Día</option>
+                </select>
+
+                <label for="time-value">Selecciona la fecha:</label>
+                <input type="text" id="time-value" name="time-value" required>
+
+                <label for="season-number">Número de temporada:</label>
+                <input type="number" id="season-number" name="season-number" required>
+
+                <button type="submit">Agregar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Incluye Flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <!-- Incluye Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
