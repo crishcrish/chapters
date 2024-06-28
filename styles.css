@@ -22,8 +22,16 @@ body {
     gap: 10px;
     justify-content: center;
 }
+.day {
+    width: 200px; /* Ajustado para dar más espacio al contenido */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background: gold;
+    cursor: pointer;
+}
 
-.week, .day {
+.week {
     width: 200px; /* Ajustado para dar más espacio al contenido */
     padding: 10px;
     border: 1px solid #ccc;
@@ -31,6 +39,7 @@ body {
     background: #fafafa;
     cursor: pointer;
 }
+
 
 .week.selected, .day.selected {
     background: #d1e7dd;
@@ -46,7 +55,6 @@ button {
     border-radius: 5px;
     cursor: pointer;
 }
-
 
 #calendar .season {
     margin-top: 20px;

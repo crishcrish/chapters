@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
     flatpickr(timeValueInput, {
         enableTime: false,
         dateFormat: "Y-m-d",
-        minDate: "today"
+        minDate: null
     });
 
     // Load saved chapters from Firestore
@@ -38,64 +38,55 @@ document.addEventListener('DOMContentLoaded', function() {
 
         db.collection('chapters').get()
             .then((querySnapshot) => {
-                const savedChapters = {
-                    weeks: {},
-                    days: {}
-                };
+                const seasons = {};
 
                 querySnapshot.forEach((doc) => {
                     const chapter = doc.data();
                     const index = doc.id;
 
-                    if (chapter.date.includes('-')) {
-                        savedChapters.weeks[index] = chapter;
-                    } else {
-                        savedChapters.days[index] = chapter;
+                    if (!seasons[chapter.season]) {
+                        seasons[chapter.season] = [];
                     }
+
+                    seasons[chapter.season].push({ id: index, ...chapter });
                 });
 
-                displayChapters(savedChapters);
+                displayChapters(seasons);
             })
             .catch((error) => {
                 console.error('Error loading chapters: ', error);
             });
     }
 
-    function displayChapters(savedChapters) {
-        // Agrupar capítulos por temporadas
-        const seasons = {};
-        Object.keys(savedChapters.weeks).forEach(index => {
-            const chapter = savedChapters.weeks[index];
-            if (!seasons[chapter.season]) {
-                seasons[chapter.season] = [];
-            }
-            seasons[chapter.season].push({ type: 'week', index, data: chapter });
-        });
-        Object.keys(savedChapters.days).forEach(index => {
-            const chapter = savedChapters.days[index];
-            if (!seasons[chapter.season]) {
-                seasons[chapter.season] = [];
-            }
-            seasons[chapter.season].push({ type: 'day', index, data: chapter });
-        });
-
+    function displayChapters(seasons) {
         // Mostrar capítulos agrupados por temporadas
         Object.keys(seasons).forEach(seasonNumber => {
             const seasonDiv = document.createElement('div');
             seasonDiv.className = 'season';
             seasonDiv.innerHTML = `<h3>Temporada ${seasonNumber}</h3>`;
-            
+
             seasons[seasonNumber].forEach(item => {
-                addTimeElement(seasonDiv, item.type, item.index, item.data);
+                addTimeElement(seasonDiv, item);
             });
 
             calendar.appendChild(seasonDiv);
         });
     }
 
+    // Function to format date as YYYYMMDD
+    function formatDate(date) {
+        const d = new Date(date);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}${month}${day}`;
+    }
+
     // Function to add chapter to Firestore
     function addChapter(chapterName, timeUnit, timeValue, seasonNumber) {
         let displayDate = '';
+        let docId = '';
+
         if (timeUnit === 'week') {
             const selectedDate = new Date(timeValue);
             const startOfWeek = new Date(selectedDate);
@@ -103,17 +94,21 @@ document.addEventListener('DOMContentLoaded', function() {
             const endOfWeek = new Date(selectedDate);
             endOfWeek.setDate(selectedDate.getDate() - selectedDate.getDay() + 6);
             displayDate = `${startOfWeek.toLocaleDateString()} - ${endOfWeek.toLocaleDateString()}`;
+            docId = `${seasonNumber}-${formatDate(startOfWeek)}`;
         } else {
-            displayDate = new Date(timeValue).toLocaleDateString();
+            const selectedDate = new Date(timeValue);
+            displayDate = selectedDate.toLocaleDateString();
+            docId = `${seasonNumber}-${formatDate(selectedDate)}`;
         }
 
         const chapterData = {
             name: chapterName,
             date: displayDate,
-            season: seasonNumber
+            season: seasonNumber,
+            type: timeUnit
         };
 
-        db.collection('chapters').add(chapterData)
+        db.collection('chapters').doc(docId).set(chapterData)
             .then(() => {
                 console.log('Chapter added successfully');
                 loadChapters(); // Reload chapters after addition
@@ -124,29 +119,32 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Function to add time element to calendar
-    function addTimeElement(container, type, index, chapterData) {
-        const timeDiv = document.createElement('div');
-        timeDiv.className = type;
-        timeDiv.textContent = `${chapterData.name} - ${chapterData.date}`;
-        timeDiv.dataset.index = index;
-        timeDiv.addEventListener('click', () => renameChapter(index));
-        container.appendChild(timeDiv);
+    // Function to add time element to calendar
+function addTimeElement(container, chapter) {
+    const timeDiv = document.createElement('div');
+    timeDiv.textContent = chapter.name;
+    
+    const dateDiv = document.createElement('div');
+    dateDiv.textContent = chapter.date;
+
+    const elementDiv = document.createElement('div');
+    elementDiv.appendChild(timeDiv);
+    elementDiv.appendChild(dateDiv);
+
+    if (chapter.type === 'week') {
+        elementDiv.className = 'week';
+    } else {
+        elementDiv.className = 'day';
     }
 
+    elementDiv.dataset.index = chapter.id;
+    elementDiv.addEventListener('click', () => renameChapter(chapter.id));
+
+    container.appendChild(elementDiv);
+}
+
+
     // Function to rename chapter in Firestore
-    function renameChapter(id) {
-        const newName = prompt("Enter a new name for this chapter:");
-        if (newName) {
-            db.collection('chapters').doc(id).update({ name: newName })
-                .then(() => {
-                    console.log('Chapter renamed successfully');
-                    loadChapters(); // Reload chapters after renaming
-                })
-                .catch((error) => {
-                    console.error('Error renaming chapter: ', error);
-                });
-        }
-    }
 
     // Show modal on button click
     addChapterButton.addEventListener('click', () => {
