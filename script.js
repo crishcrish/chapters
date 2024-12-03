@@ -82,17 +82,24 @@ document.addEventListener('DOMContentLoaded', function() {
         return `${year}${month}${day}`;
     }
 
-    // Function to add chapter to Firestore
     function addChapter(chapterName, timeUnit, timeValue, seasonNumber) {
         let displayDate = '';
         let docId = '';
-
+    
         if (timeUnit === 'week') {
             const selectedDate = new Date(timeValue);
+    
+            // Calcular el inicio de la semana (lunes)
             const startOfWeek = new Date(selectedDate);
-            startOfWeek.setDate(selectedDate.getDate() - selectedDate.getDay());
-            const endOfWeek = new Date(selectedDate);
-            endOfWeek.setDate(selectedDate.getDate() - selectedDate.getDay() + 6);
+            const dayOfWeek = startOfWeek.getDay(); // Domingo = 0
+            const offset = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Ajuste para que lunes sea el primer día
+            startOfWeek.setDate(selectedDate.getDate() - offset);
+    
+            // Calcular el fin de la semana (domingo)
+            const endOfWeek = new Date(startOfWeek);
+            endOfWeek.setDate(startOfWeek.getDate() + 6);
+    
+            // Formato de las fechas de la semana
             displayDate = `${startOfWeek.toLocaleDateString()} - ${endOfWeek.toLocaleDateString()}`;
             docId = `${seasonNumber}-${formatDate(startOfWeek)}`;
         } else {
@@ -100,14 +107,14 @@ document.addEventListener('DOMContentLoaded', function() {
             displayDate = selectedDate.toLocaleDateString();
             docId = `${seasonNumber}-${formatDate(selectedDate)}`;
         }
-
+    
         const chapterData = {
             name: chapterName,
             date: displayDate,
             season: seasonNumber,
             type: timeUnit
         };
-
+    
         db.collection('chapters').doc(docId).set(chapterData)
             .then(() => {
                 console.log('Chapter added successfully');
