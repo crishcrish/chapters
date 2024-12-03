@@ -21,7 +21,14 @@ body {
     flex-wrap: wrap;
     gap: 10px;
     justify-content: center;
+    max-height: 400px; /* Límite de altura ajustable */
+    overflow-y: auto;  /* Habilitar scroll vertical */
+    padding: 10px;
+    border: 1px solid #ddd; /* Para diferenciar el área */
+    border-radius: 5px;
+    background-color: #fff; /* Fondo para destacar los capítulos */
 }
+
 .day {
     width: 200px; /* Ajustado para dar más espacio al contenido */
     padding: 10px;
